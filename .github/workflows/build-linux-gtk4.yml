@@ -1,11 +1,11 @@
-name: Build and Push Ubuntu-Rust-gtk414
+name: Build and Push Ubuntu-Rust-gtk4
 
 on:
   workflow_dispatch:
   push:
     branches: [dev]
     paths:
-      - "ubuntu-rust-gtk414/**"
+      - "ubuntu-rust-gtk4/**"
 
 jobs:
   build-and-push:
@@ -18,8 +18,20 @@ jobs:
         include:
           - platform: amd64
             arch: amd64
+            gtk: 414
+            codename: noble
           - platform: arm64
             arch: arm64v8
+            gtk: 414
+            codename: noble
+          - platform: amd64
+            arch: amd64
+            gtk: 416
+            codename: oracular
+          - platform: arm64
+            arch: arm64v8
+            gtk: 416
+            codename: oracular
 
     steps:
       - uses: actions/checkout@v4
@@ -47,16 +59,17 @@ jobs:
         run: |
           echo "OWNER=${GITHUB_REPOSITORY_OWNER@L}" >> ${GITHUB_ENV}
 
-      - name: Build and push for ${{ matrix.platform }}
+      - name: Build and push gtk${{matrix.gtk}}-${{ matrix.platform }}
         uses: docker/build-push-action@v6
         with:
-          context: ubuntu-rust-gtk414
+          context: ubuntu-rust-gtk4
           platforms: linux/${{ matrix.platform }}
           push: true
           tags: |
-            ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk414-${{ matrix.platform }}
+            ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk${{matrix.gtk}}-${{ matrix.platform }}
           build-args: |
             ARCH=${{ matrix.arch }}
+            CODENAME=${{matrix.codename}}
           provenance: false
 
   merge:
@@ -96,7 +109,7 @@ jobs:
         run: |
           echo "OWNER=${GITHUB_REPOSITORY_OWNER@L}" >> ${GITHUB_ENV}
 
-      - name: Create multi-arch manifest on Github
+      - name: Create multi-arch manifest gtk4.14
         run: |
           docker manifest create ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk414-latest \
             ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk414-amd64 \
@@ -107,6 +120,17 @@ jobs:
             ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk414-arm64 --arch arm64
           docker manifest push ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk414-latest
 
+      - name: Create multi-arch manifest gtk4 latest
+        run: |
+          docker manifest create ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:latest \
+            ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk416-amd64 \
+            ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk416-arm64
+          docker manifest annotate ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:latest \
+            ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk416-amd64 --arch amd64
+          docker manifest annotate ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:latest \
+            ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk416-arm64 --arch arm64
+          docker manifest push ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:latest
       - name: Check push
         run: |
+          docker buildx imagetools inspect ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:latest
           docker buildx imagetools inspect ghcr.io/${{ env.OWNER }}/ubuntu-rust-gtk4:gtk414-latest
