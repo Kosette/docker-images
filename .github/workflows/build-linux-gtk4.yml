@@ -6,6 +6,8 @@ on:
     branches: [dev]
     paths:
       - "ubuntu-rust-gtk4/**"
+  schedule:
+    - cron: "18 9 1 * *"
 
 jobs:
   build-and-push:
