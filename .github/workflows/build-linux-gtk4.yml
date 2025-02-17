@@ -11,7 +11,6 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
     permissions:
       packages: write
     strategy:
@@ -22,18 +21,24 @@ jobs:
             arch: amd64
             gtk: 414
             codename: noble
+            os: ubuntu-latest
           - platform: arm64
             arch: arm64v8
             gtk: 414
             codename: noble
+            os: ubuntu-24.04-arm
           - platform: amd64
             arch: amd64
             gtk: 416
             codename: oracular
+            os: ubuntu-latest
           - platform: arm64
             arch: arm64v8
             gtk: 416
             codename: oracular
+            os: ubuntu-24.04-arm
+
+    runs-on: ${{matrix.os}}
 
     steps:
       - uses: actions/checkout@v4
