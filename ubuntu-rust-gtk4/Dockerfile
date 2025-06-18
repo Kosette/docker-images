@@ -1,5 +1,6 @@
 ARG ARCH=amd64
 ARG CODENAME=oracular
+ARG TOOLCHAIN=stable
 
 FROM $ARCH/ubuntu:$CODENAME
 
@@ -18,6 +19,6 @@ VOLUME /app
 
 COPY ./entrypoint.sh /
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain $TOOLCHAIN
 
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
